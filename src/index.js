@@ -1,11 +1,12 @@
 let addToy = false;
 
 document.addEventListener("DOMContentLoaded", () => {
+  const toyUrl = "http://localhost:3000/toys";
+  divToyCollection = document.querySelector("div#toy-collection");
   const addBtn = document.querySelector("#new-toy-btn");
   const toyFormContainer = document.querySelector(".container");
-  divToyCollection = document.querySelector("div#toy-collection");
   const toyForm = document.querySelector(".add-toy-form");
-  const toyUrl = "http://localhost:3000/toys";
+
   addBtn.addEventListener("click", () => {
     // hide & seek with the form
     addToy = !addToy;
@@ -16,27 +17,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  //make a 'GET' request to fetch all the toy objects
-  //With the response data, make a <div class="card"> for each toy and add it to the toy-collection div.
+  /*1. On the index.html page, there is a div with the id "toy-collection." When the page loads, make a 'GET' request to fetch all the toy objects. With the response data, make a <div class="card"> for each toy and add it to the toy-collection div.
+   */
   const getToy = () => {
     fetch(toyUrl)
       .then(res => res.json())
-      .then(toys => toys.forEach(toy => creatingElements(toy))) //Call creatingElements to render a card for each toy
+      .then(toys => toys.forEach(toy => createToyCard(toy))) //Call creatingElements to render a card for each toy
       .catch(err => alert(err));
   };
   getToy();
 
-  /* Each card should have the following child elements: --- need to append to card after creating each element
+  /*2. Each card should have the following child elements: --- need to append to card after creating each element
      - h2 tag with the toy's name
      - img tag with the src of the toy's image attribute and the class name "toy-avatar"
      - p tag with how many likes that toy has
      - button tag with a class "like-btn" and an id attribute set to the toy's id number 
 */
-  const creatingElements = toy => {
-    //Create elements
-    const card = document.createElement("div"); //make a <div class="card"> for each toy and add it to the toy-collection div.
-    divToyCollection.append(card); //append card to collection
+  const createToyCard = toy => {
+    const card = document.createElement("div");
+    divToyCollection.append(card);
 
+    //create elements to append to card
     card.className = "card";
     card.id = toy.id;
     const h2 = document.createElement("h2");
@@ -59,13 +60,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /////////////Patch
 
-    //A patch request (i.e., method: "PATCH") should be sent to the server updating the number of likes that the specific toy has
-    //The patch request enables us to update an existing toy.
-    /* you will need to add an event listener to each toy's "Like" button. When the button is clicked for a toy, your code should:
-      - capture that toy's id,
-      - calculate the new number of likes,
-      - submit the patch request, and
-      - update the toy's card in the DOM based on the Response returned by the fetch request. 
+    /* 
+    When a user clicks on a toy's like button, two things should happen:
+
+    A patch request (i.e., method: "PATCH") should be sent to the server at http://localhost:3000/toys/:id, updating the number of likes that the specific toy has
+    If the patch is successful, the toy's like count should be updated in the DOM without reloading the page
+    The patch request enables us to update an existing toy. The request will look very similar to our "POST" request except that we need to include the id of the toy we're updating in the path.
+    
+    To get this working, you will need to add an event listener to each toy's "Like" button. When the button is clicked for a toy, your code should:
+    - capture that toy's id,
+    - calculate the new number of likes,
+    - submit the patch request, and
+    - update the toy's card in the DOM based on the Response returned by the fetch request. 
     */
     btn.addEventListener("click", event => {
       fetch(`${toyUrl}/${toy.id}`, {
@@ -85,7 +91,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  ///////POST request sent to URL, to submit toy form - to use addeventListener
+  /////////////Post
+
+  /* 
+When a user submits the toy form, two things should happen:
+A POST request should be sent to http://localhost:3000/toys and the new toy added to Andy's Toy Collection.
+If the post is successful, the toy should be added to the DOM without reloading the page.
+In order to send a POST request via fetch(), give the fetch() a second argument of an object. This object should specify the method as POST and also provide the appropriate headers and the JSON data for the request. 
+*/
   const postToy = newToy => {
     fetch("http://localhost:3000/toys", {
       method: "POST",
@@ -100,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }),
     })
       .then(res => res.json())
-      .then(newToyCard => creatingElements(newToyCard)); //create a card for a new toy after triggering creatingElements function after clicking submit button
+      .then(newToyCard => createToyCard(newToyCard)); //create a card for a new toy after triggering createToyCard function after clicking submit button
   };
 
   //add submit event listener to form
